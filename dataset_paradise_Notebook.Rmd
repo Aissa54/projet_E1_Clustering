@@ -1,0 +1,221 @@
+---
+title: "Dataset Paradise R Notebook"
+output: html_notebook
+---
+
+Import du dataset Paradise 
+```{r}
+data_brut <- read.csv("dataset_PARADISE.csv")
+```
+
+Copie du dataset
+```{r}
+df <- data_brut
+str(df)
+names(df)
+```
+
+Utilisation de la librairie summarytools pour voir la distribution des variables ainsi que les valeurs manquantes
+```{r}
+library(summarytools)
+# view(dfSummary(df, varnumbers = FALSE))
+
+print(dfSummary(df, plain.ascii = FALSE, valid.col = FALSE, graph.magnif = 0.76), method='render')
+
+
+```
+
+
+
+Préparation du dataset pour le clustering : transformation des entiers et chaînes de caractères en facteur
+```{r}
+df$Trt_Insuline <- as.factor((df$Trt_Insuline))
+df$OEDEME <- as.factor((df$OEDEME))
+df$tt6h_broncho_parasymp <- as.factor(df$tt6h_broncho_parasymp)
+df$RONCHI <- as.factor(df$RONCHI)
+df$RALES <- as.factor(df$RALES)
+df$SIBILANTS <- as.factor(df$SIBILANTS)
+df$Trt_Statine <- as.factor(df$Trt_Statine)
+df$TURGJUG <- as.factor(df$TURGJUG)
+df$tt6h_vni <- as.factor(df$tt6h_vni)
+df$tth6_vasodil <- as.factor(df$tth6_vasodil)
+df$CoMorbidite_Non.Cardio.Vasculaire_Anemie <- as.factor(df$CoMorbidite_Non.Cardio.Vasculaire_Anemie)
+df$CoMorbidite_CardioVasculaire__Angio <- as.factor(df$CoMorbidite_CardioVasculaire__Angio)
+df$CoMorbidite_CardioVasculaire_ICC <- as.factor(df$CoMorbidite_CardioVasculaire_ICC)
+df$CoMorbidite_CardioVasculaire__Arterite <- as.factor(df$CoMorbidite_CardioVasculaire__Arterite)
+df$CoMorbidite_Non.Cardio.Vasculaire_Asthme <- as.factor(df$CoMorbidite_Non.Cardio.Vasculaire_Asthme)
+df$CoMorbidite_CardioVasculaire__AVC <- as.factor(df$CoMorbidite_CardioVasculaire__AVC)
+df$CoMorbidite_Non.Cardio.Vasculaire_BPCO <- as.factor(df$CoMorbidite_Non.Cardio.Vasculaire_BPCO)
+df$CoMorbidite_CardioVasculaire__Coro <- as.factor(df$CoMorbidite_CardioVasculaire__Coro)
+df$CoMorbidite_CardioVasculaire__Defib <- as.factor(df$CoMorbidite_CardioVasculaire__Defib)
+df$CoMorbidite_Non.Cardio.Vasculaire_Depression <- as.factor(df$CoMorbidite_Non.Cardio.Vasculaire_Depression)
+df$CoMorbidite_CardioVasculaire__Diabete <- as.factor(df$CoMorbidite_CardioVasculaire__Diabete)
+df$CoMorbidite_CardioVasculaire__Dyslip <- as.factor(df$CoMorbidite_CardioVasculaire__Dyslip)
+df$CoMorbidite_CardioVasculaire__Embol <- as.factor(df$CoMorbidite_CardioVasculaire__Embol)
+df$CoMorbidite_CardioVasculaire__FA <- as.factor(df$CoMorbidite_CardioVasculaire__FA)
+df$CoMorbidite_CardioVasculaire__Fumeur <- as.factor(df$CoMorbidite_CardioVasculaire__Fumeur)
+df$Trt_Furosemide <- as.factor(df$Trt_Furosemide)
+df$CoMorbidite_CardioVasculaire__HTA <- as.factor(df$CoMorbidite_CardioVasculaire__HTA)
+df$CoMorbidite_Non.Cardio.Vasculaire_IRC <- as.factor(df$CoMorbidite_Non.Cardio.Vasculaire_IRC)
+df$CoMorbidite_CardioVasculaire__Obesite <- as.factor(df$CoMorbidite_CardioVasculaire__Obesite)
+df$CoMorbidite_CardioVasculaire__Pacemaker <- as.factor(df$CoMorbidite_CardioVasculaire__Pacemaker)
+df$CoMorbidite_CardioVasculaire__Resync <- as.factor(df$CoMorbidite_CardioVasculaire__Resync)
+df$CoMorbidite_CardioVasculaire__SCAST. <- as.factor(df$CoMorbidite_CardioVasculaire__SCAST.)
+df$CoMorbidite_CardioVasculaire__Valvulo <- as.factor(df$CoMorbidite_CardioVasculaire__Valvulo)
+df$Cardiopathies <- as.factor(df$Cardiopathies)
+df$ICC <- as.factor(df$ICC)
+df$accord_Diag <- as.factor(df$accord_Diag)
+df$DCintra_ddp <- as.factor(df$DCintra_ddp)
+df$DCextra_ddp <- as.factor(df$DCextra_ddp)
+df$URG_Diag <- as.factor(df$URG_Diag)
+df$PMSI_Diag <- as.factor(df$PMSI_Diag)
+df$DC_ddp  <- as.factor(df$DC_ddp)
+df$Trt_Ara2 <- as.factor(df$Trt_Ara2)
+df$Trt_AntiAgr <- as.factor(df$Trt_AntiAgr)
+df$sexe <- as.factor(df$sexe)
+df$Trt_AntiCoag <- as.factor(df$Trt_AntiCoag)
+df$tt6h_broncho_beta2 <- as.factor(df$tt6h_broncho_beta2)
+df$Trt_Bumetanide <- as.factor(df$Trt_Bumetanide)
+df$Trt_BetaBloquants <- as.factor(df$Trt_BetaBloquants)
+df$tt6h_diur <- as.factor(df$tt6h_diur)
+df$Trt_IEC <- as.factor(df$Trt_IEC)
+str(df)
+```
+
+
+On supprime la variable « num_resurgences » car ce sont des valeurs uniques donc ils ne seront pas utiles pour faire du clustering.
+```{r}
+df_new <- df[-1]
+str(df_new)
+```
+
+ On supprime également la variable « t2d_d »  car elle donne des valeurs en dessous de zéro.
+```{r}
+ df_new <- df_new[-79]
+str(df_new)
+```
+ 
+On supprimme toutes les variables avec un pourcentage supérieur à 40 % de valeur manquantes
+```{r}
+df_new <-df_new[, colSums(is.na(df_new)) < nrow(df_new) * 0.4]
+```
+
+On utilise la librairie VarSelLCM pour du clustering
+```{r}
+#import du packages VarSelLCM
+library(VarSelLCM)
+```
+Clustering sans sélection de variable
+```{r}
+# clustering sans sélection de variable
+res_without <- VarSelCluster(df_new, gvals = 1:5, vbleSelec = FALSE, crit.varsel = "BIC")
+```
+
+
+Clustering avec sélection de variable
+```{r}
+# clustering avec sélection de variable
+res_with <- sapply(1:10, VarSelCluster, x=df_new, nbcores = 70, crit.varsel = "BIC")
+
+par(mar = c(4, 4, .1, .1))
+plot(sapply(res_with, function(u) u@criteria@BIC), type = "b", xlab = "nb clusters", ylab ="BIC")
+plot(sapply(res_with, function(u) u@criteria@ICL), type = "b", xlab = "nb clusters", ylab ="ICL")
+```
+
+Le meilleur nombre de cluster
+```{r}
+bestres <- res_with[[7]]
+```
+
+
+Analyse de cluster sans sélection de variable
+```{r}
+# Sortie plus détaillée
+print(res_without)
+
+# Partition estimée
+fitted(res_without)
+
+# Probabilités estimées de classement
+head(fitted(res_without, type="probability"))
+
+# Résumé des probabilités de mauvaise classification
+plot(res_without, type="probs-class")
+
+```
+
+Ouverture de l'application Shiny pour voir facilement les résultats (sans séléction de variable)
+```{r}
+# Ouverture de l'application Shiny pour voir facilement les résultats
+VarSelShiny(res_without)
+```
+
+
+Analyse de cluster avec sélection de variable
+```{r}
+# Sortie plus détaillée
+print(res_with)
+
+# Partition estimée
+fitted(res_with)
+
+# Probabilités estimées de classement
+head(fitted(res_with, type="probability"))
+
+# Résumé des probabilités de mauvaise classification
+plot(res_with, type="probs-class")
+
+
+```
+
+
+
+
+```{r}
+df_new$Clusters <- as.factor(df_new$Clusters)
+df_new$Clusters <- res_with@partitions@zMAP
+df_new
+```
+
+
+Ouverture de l'application Shiny pour voir facilement les résultats (avec séléction de variable)
+```{r}
+# Ouverture de l'application Shiny pour voir facilement les résultats
+VarSelShiny(res_with)
+```
+
+Création d’un dataset d’apprentissage et d’un dataset de validation
+```{r}
+
+nb_lignes <- floor((nrow(df_new)*0.75)) #Nombre de lignes de l’échantillon d’apprentissage : 75% du dataset
+numero_aux_lignes <- df_new[sample(nrow(df_new)), ] #Ajout de numéros de lignes
+df_new.train <- df_new[1:nb_lignes, ] #Echantillon d’apprentissage
+df_new.test <- df_new[(nb_lignes+1):nrow(df_new), ] #Echantillon de test
+```
+
+Apprentissage
+Nous allons maintenant construire l’arbre et l’élaguer
+```{r}
+#Construction de l’arbre
+library(rpart)
+df_new.Tree <- rpart(Clusters~.,data=df_new.train,method= "class", control=rpart.control(minsplit=5,cp=0))
+```
+
+Résultat
+```{r}
+#Affichage du résultat
+plot(df_new.Tree, uniform=TRUE, branch=0.5, margin=0.1)
+text(df_new.Tree, all=FALSE, use.n=TRUE)
+```
+
+```{r}
+#On cherche à minimiser l’erreur pour définir le niveau d’élagage
+plotcp(df_new.Tree)
+```
+Le graphique ci-dessus affiche le taux de mauvais classement en fonction de la taille de l’arbre. On cherche à minimiser l’erreur.
+
+```{r}
+#Affichage du cp optimal
+print(df_new.Tree$cptable[which.min(df_new.Tree$cptable[,4]),1])
+```
+

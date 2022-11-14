@@ -1,0 +1,699 @@
+---
+title: "Final_notebook_paradise"
+output:
+  html_notebook: default
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+
+```{r}
+#code pour faire disparaitre les lignes de code sur le Preview Notebook
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, results = "hide")
+```
+
+
+```{r}
+# Import du dataset Paradise 
+data_brut <- read.csv("paradise_2010_2019_sifr_bio_6diags_surv_0522_insee.csv")
+```
+
+
+```{r}
+# Copie du dataset
+df <- data_brut
+str(df)
+```
+
+
+
+Visualisation des distributions du dataset Paradise avant nettoyage percentiles 
+```{r}
+# Utilisation de la librairie summarytools pour voir la distribution des variables ainsi que les valeurs manquantes
+library(summarytools)
+# view(dfSummary(df, varnumbers = FALSE))
+
+print(dfSummary(df, plain.ascii = FALSE, valid.col = FALSE, graph.magnif = 0.76), method='render')
+
+
+```
+
+
+
+```{r}
+# Préparation du dataset pour le clustering : transformation des entiers et chaînes de caractères en facteur
+df$Trt_Insuline <- as.factor((df$Trt_Insuline))
+df$OEDEME <- as.factor((df$OEDEME))
+df$tt6h_broncho_parasymp <- as.factor(df$tt6h_broncho_parasymp)
+df$RONCHI <- as.factor(df$RONCHI)
+df$RALES <- as.factor(df$RALES)
+df$SIBILANTS <- as.factor(df$SIBILANTS)
+df$Trt_Statine <- as.factor(df$Trt_Statine)
+df$TURGJUG <- as.factor(df$TURGJUG)
+df$tt6h_vni <- as.factor(df$tt6h_vni)
+df$tth6_vasodil <- as.factor(df$tth6_vasodil)
+df$CoMorbidite_Non.Cardio.Vasculaire_Anemie <- as.factor(df$CoMorbidite_Non.Cardio.Vasculaire_Anemie)
+df$CoMorbidite_CardioVasculaire__Angio <- as.factor(df$CoMorbidite_CardioVasculaire__Angio)
+df$CoMorbidite_CardioVasculaire_ICC <- as.factor(df$CoMorbidite_CardioVasculaire_ICC)
+df$CoMorbidite_CardioVasculaire__Arterite <- as.factor(df$CoMorbidite_CardioVasculaire__Arterite)
+df$CoMorbidite_Non.Cardio.Vasculaire_Asthme <- as.factor(df$CoMorbidite_Non.Cardio.Vasculaire_Asthme)
+df$CoMorbidite_CardioVasculaire__AVC <- as.factor(df$CoMorbidite_CardioVasculaire__AVC)
+df$CoMorbidite_Non.Cardio.Vasculaire_BPCO <- as.factor(df$CoMorbidite_Non.Cardio.Vasculaire_BPCO)
+df$CoMorbidite_CardioVasculaire__Coro <- as.factor(df$CoMorbidite_CardioVasculaire__Coro)
+df$CoMorbidite_CardioVasculaire__Defib <- as.factor(df$CoMorbidite_CardioVasculaire__Defib)
+df$CoMorbidite_Non.Cardio.Vasculaire_Depression <- as.factor(df$CoMorbidite_Non.Cardio.Vasculaire_Depression)
+df$CoMorbidite_CardioVasculaire__Diabete <- as.factor(df$CoMorbidite_CardioVasculaire__Diabete)
+df$CoMorbidite_CardioVasculaire__Dyslip <- as.factor(df$CoMorbidite_CardioVasculaire__Dyslip)
+df$CoMorbidite_CardioVasculaire__Embol <- as.factor(df$CoMorbidite_CardioVasculaire__Embol)
+df$CoMorbidite_CardioVasculaire__FA <- as.factor(df$CoMorbidite_CardioVasculaire__FA)
+df$CoMorbidite_CardioVasculaire__Fumeur <- as.factor(df$CoMorbidite_CardioVasculaire__Fumeur)
+df$Trt_Furosemide <- as.factor(df$Trt_Furosemide)
+df$CoMorbidite_CardioVasculaire__HTA <- as.factor(df$CoMorbidite_CardioVasculaire__HTA)
+df$CoMorbidite_Non.Cardio.Vasculaire_IRC <- as.factor(df$CoMorbidite_Non.Cardio.Vasculaire_IRC)
+df$CoMorbidite_CardioVasculaire__Obesite <- as.factor(df$CoMorbidite_CardioVasculaire__Obesite)
+df$CoMorbidite_CardioVasculaire__Pacemaker <- as.factor(df$CoMorbidite_CardioVasculaire__Pacemaker)
+df$CoMorbidite_CardioVasculaire__Resync <- as.factor(df$CoMorbidite_CardioVasculaire__Resync)
+df$CoMorbidite_CardioVasculaire__SCAST. <- as.factor(df$CoMorbidite_CardioVasculaire__SCAST.)
+df$CoMorbidite_CardioVasculaire__Valvulo <- as.factor(df$CoMorbidite_CardioVasculaire__Valvulo)
+df$Cardiopathies <- as.factor(df$Cardiopathies)
+df$ICC <- as.factor(df$ICC)
+df$accord_Diag <- as.factor(df$accord_Diag)
+df$DCintra_ddp <- as.factor(df$DCintra_ddp)
+df$DCextra_ddp <- as.factor(df$DCextra_ddp)
+df$URG_Diag <- as.factor(df$URG_Diag)
+df$PMSI_Diag <- as.factor(df$PMSI_Diag)
+df$DC_ddp  <- as.factor(df$DC_ddp)
+df$Trt_Ara2 <- as.factor(df$Trt_Ara2)
+df$Trt_AntiAgr <- as.factor(df$Trt_AntiAgr)
+df$sexe <- as.factor(df$sexe)
+df$Trt_AntiCoag <- as.factor(df$Trt_AntiCoag)
+df$tt6h_broncho_beta2 <- as.factor(df$tt6h_broncho_beta2)
+df$Trt_Bumetanide <- as.factor(df$Trt_Bumetanide)
+df$Trt_BetaBloquants <- as.factor(df$Trt_BetaBloquants)
+df$tt6h_diur <- as.factor(df$tt6h_diur)
+df$Trt_IEC <- as.factor(df$Trt_IEC)
+str(df)
+```
+
+
+```{r}
+# On supprime la variable « num_resurgences » car ce sont des valeurs uniques donc ils ne seront pas utiles pour faire du clustering.
+df_clean <- df[-1]
+str(df_clean)
+```
+
+
+```{r}
+# On supprime la variable "t2d_d" car variable continue
+df_clean <- df_clean[-79]
+str(df_clean)
+```
+
+```{r}
+# on supprimme la variable CoMorbidite_CardioVasculaire_ICC  car on a une variable ICC
+df_clean <-df_clean[-23]
+str(df_clean)
+```
+
+
+```{r}
+# On supprimme toutes les variables avec un pourcentage supérieur à 40 % de valeur manquantes
+df_clean <-df_clean[, colSums(is.na(df_clean)) < nrow(df_clean) * 0.4]
+```
+
+
+Nettoyage des percentils (20 variables concernées)
+
+
+```{r}
+# Modification de la distribution pour le CL
+library(dplyr)
+per <- quantile(df_clean$CL, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- df_clean %>%
+  mutate(CL = case_when(CL < per[1] ~ per[1],
+              CL> per[2] ~ per[2],
+              TRUE ~ CL))
+```
+
+
+```{r}
+# Modification de la distribution pour l'Hemoglobine
+per <- quantile(test.df_clean$Hemoglobine, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(Hemoglobine = case_when(Hemoglobine < per[1] ~ per[1],
+              Hemoglobine> per[2] ~ per[2],
+              TRUE ~ Hemoglobine))
+```
+
+
+```{r}
+# Modification de la distribution pour les Globules_rouges
+per <- quantile(test.df_clean$Globules_rouges, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(Globules_rouges = case_when(Globules_rouges> per[2] ~ per[2],
+              TRUE ~ Globules_rouges))
+```
+
+
+```{r}
+# Modification de la distribution pour le CVGR
+per <- quantile(test.df_clean$CVGR, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(CVGR = case_when(CVGR < per[1] ~ per[1],
+              CVGR> per[2] ~ per[2],
+              TRUE ~ CVGR))
+```
+
+
+```{r}
+# Modification de la distribution pour les Globules_blancs
+per <- quantile(test.df_clean$Globules_blancs, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(Globules_blancs = case_when(Globules_blancs> per[2] ~ per[2],
+              TRUE ~ Globules_blancs))
+```
+
+
+```{r}
+# Modification de la distribution pour les P_neutrophiles
+per <- quantile(test.df_clean$P_neutrophiles, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(P_neutrophiles = case_when(P_neutrophiles> per[2] ~ per[2],
+              TRUE ~ P_neutrophiles))
+```
+
+
+```{r}
+# Modification de la distribution pour les Lymphocytes
+per <- quantile(test.df_clean$Lymphocytes, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(Lymphocytes = case_when(Lymphocytes> per[2] ~ per[2],
+              TRUE ~ Lymphocytes))
+```
+
+
+```{r}
+# Modification de la distribution pour les Monocytes
+per <- quantile(test.df_clean$Monocytes, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(Monocytes = case_when(Monocytes> per[2] ~ per[2],
+              TRUE ~ Monocytes))
+```
+
+
+```{r}
+# Modification de la distribution pour les Plaquettes
+per <- quantile(test.df_clean$Plaquettes, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(Plaquettes = case_when(Plaquettes> per[2] ~ per[2],
+              TRUE ~ Plaquettes))
+```
+
+
+```{r}
+# Modification de la distribution pour la Creat_SI
+per <- quantile(test.df_clean$Creat_SI, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(Creat_SI = case_when(Creat_SI> per[2] ~ per[2],
+              TRUE ~ Creat_SI))
+```
+
+
+```{r}
+# Modification de la distribution pour le Glucose
+per <- quantile(test.df_clean$Glucose, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(Glucose = case_when(Glucose < per[1] ~ per[1],
+              Glucose> per[2] ~ per[2],
+              TRUE ~ Glucose))
+```
+
+
+```{r}
+# Modification de la distribution pour l'HCO3_reels
+per <- quantile(test.df_clean$HCO3_reels, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(HCO3_reels = case_when(HCO3_reels < per[1] ~ per[1],
+              HCO3_reels> per[2] ~ per[2],
+              TRUE ~ HCO3_reels))
+```
+
+
+```{r}
+# Modification de la distribution pour l'Hematocrite
+per <- quantile(test.df_clean$Hematocrite, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(Hematocrite = case_when(Hematocrite < per[1] ~ per[1],
+              Hematocrite> per[2] ~ per[2],
+              TRUE ~ Hematocrite))
+```
+
+
+```{r}
+# Modification de la distribution pour le K
+per <- quantile(test.df_clean$K, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(K = case_when(K < per[1] ~ per[1],
+              K> per[2] ~ per[2],
+              TRUE ~ K))
+```
+
+
+```{r}
+# Modification de la distribution pour le LACT
+per <- quantile(test.df_clean$LACT, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(LACT = case_when(LACT> per[2] ~ per[2],
+              TRUE ~ LACT))
+```
+
+
+```{r}
+# Modification de la distribution pour le NA.
+per <- quantile(test.df_clean$NA., probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(NA. = case_when(NA. < per[1] ~ per[1],
+              NA.> per[2] ~ per[2],
+              TRUE ~ NA.))
+```
+
+
+```{r}
+# Modification de la distribution pour la PCO2_corrigee
+per <- quantile(test.df_clean$PCO2_corrigee, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(PCO2_corrigee = case_when(PCO2_corrigee < per[1] ~ per[1],
+              PCO2_corrigee> per[2] ~ per[2],
+              TRUE ~ PCO2_corrigee))
+```
+
+
+```{r}
+# Modification de la distribution pour le PH_corrige
+per <- quantile(test.df_clean$PH_corrige, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(PH_corrige = case_when(PH_corrige < per[1] ~ per[1],
+              PH_corrige> per[2] ~ per[2],
+              TRUE ~ PH_corrige))
+```
+
+
+```{r}
+# Modification de la distribution pour la PO2_corrige
+per <- quantile(test.df_clean$PO2_corrige, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(PO2_corrige = case_when(PO2_corrige> per[2] ~ per[2],
+              TRUE ~ PO2_corrige))
+```
+
+
+```{r}
+# Modification de la distribution pour l' Uree
+per <- quantile(test.df_clean$Uree, probs = c(0.01, 0.99),na.rm=TRUE)
+test.df_clean <- test.df_clean %>%
+  mutate(Uree = case_when(Uree> per[2] ~ per[2],
+              TRUE ~ Uree))
+```
+
+Visualisation des distributions du dataset Paradise après nettoyage percentiles (1% de part et d'autre)
+```{r}
+library(summarytools)
+# view(dfSummary(df, varnumbers = FALSE))
+
+print(dfSummary(test.df_clean, plain.ascii = FALSE, valid.col = FALSE, graph.magnif = 0.76), method='render')
+```
+
+
+```{r}
+# On utilise la librairie VarSelLCM pour du clustering
+
+library(VarSelLCM)
+```
+
+
+```{r}
+# clustering sans sélection de variable
+set.seed(01062022)
+res_without <- VarSelCluster(test.df_clean, gvals = 1:10, vbleSelec = FALSE, crit.varsel = "BIC")
+```
+
+
+Clustering avec sélection de variable (intérvale 1 à 10)
+```{r}
+# clustering avec sélection de variable
+set.seed(01062022)
+res_with <- sapply(1:10, VarSelCluster, x=test.df_clean[,1:65], nbcores = 50, crit.varsel = "BIC")
+
+par(mar = c(4, 4, .1, .1))
+plot(sapply(res_with, function(u) u@criteria@BIC), type = "b", xlab = "nb clusters", ylab ="BIC")
+plot(sapply(res_with, function(u) u@criteria@ICL), type = "b", xlab = "nb clusters", ylab ="ICL")
+```
+
+```{r}
+set.seed(01062022)
+varsel <- VarSelCluster(x=test.df_clean[,1:65], gvals = 7, vbleSelec = TRUE, crit.varsel = "BIC",initModel = 50, nbcores = 50, nbSmall = 250, iterSmall = 20, nbKeep = 50, iterKeep = 1000, tolKeep = 10^(-6))
+```
+
+
+
+
+```{r}
+# Partition pour 7 cluster
+clustering_7 <- varsel
+partition_7 <- clustering_7@partitions@zMAP
+table(partition_7)
+```
+
+Voici les variables les plus discriminantes 
+```{r}
+# résumer des résultats 
+library(summarytools)
+library(ggplot2)
+summary(clustering_7)
+
+dp <- clustering_7@criteria@discrim
+df.dp <- data.frame(Variables = names(dp), Discrim.Power = dp)
+df.dp <- subset(df.dp, df.dp$Discrim.Power > 2000)
+
+
+
+df.dp$Variables <- factor(df.dp$Variables, levels = df.dp$Variables)
+df.dp %>%
+ggplot(aes(x = Variables, y = Discrim.Power)) + geom_bar(stat = "identity") + coord_flip()
+```
+
+
+Clustering: Avec 5 clusters
+
+```{r}
+set.seed(01062022)
+varsel5 <- VarSelCluster(x=test.df_clean[,1:65], gvals = 5, vbleSelec = TRUE, crit.varsel = "BIC",initModel = 50, nbcores = 50, nbSmall = 250, iterSmall = 20, nbKeep = 50, iterKeep = 1000, tolKeep = 10^(-6))
+```
+
+
+
+
+```{r}
+# Partition pour 5 cluster
+clustering_5 <- varsel5
+partition_5 <- clustering_5@partitions@zMAP
+table(partition_5)
+```
+
+Voici les variables les plus discriminantes 
+```{r}
+# résumer des résultats 
+library(summarytools)
+library(ggplot2)
+summary(clustering_5)
+
+dp5 <- clustering_7@criteria@discrim
+df.dp5 <- data.frame(Variables = names(dp), Discrim.Power = dp)
+df.dp5 <- subset(df.dp5, df.dp5$Discrim.Power > 2000)
+
+
+
+df.dp5$Variables <- factor(df.dp5$Variables, levels = df.dp5$Variables)
+df.dp5 %>%
+ggplot(aes(x = Variables, y = Discrim.Power)) + geom_bar(stat = "identity") + coord_flip()
+```
+```{r}
+# Probabilités estimées de classement avec 5 clusters
+head(fitted(clustering_5, type="probability"))
+```
+
+
+
+
+Probabilités estimées de classement pour notre clustering (nous voyons que les 7 clusters sont plustôt bien équlibré)
+
+```{r}
+# Probabilités estimées de classement
+head(fitted(clustering_7, type="probability"))
+
+```
+
+
+Résumé des probabilités de mauvaise classification
+```{r}
+# Résumé des probabilités de mauvaise classification
+plot(clustering_7, type="probs-class")
+```
+```{r}
+#On créer une colone  résultat Cluster
+test.df_clean$Clusters <- clustering_7@partitions@zMAP
+test.df_clean$Clusters <- as.factor(test.df_clean$Clusters)
+test.df_clean
+```
+
+Table descriptive des variables en fonction des clusters
+```{r}
+# table descriptive des variables en fonction des clusters
+library(gtsummary)
+test.df_clean[,45:65] <- lapply(45:65, function(x) as.numeric(test.df_clean[[x]]))
+test.df_clean %>%
+tbl_summary(
+include = all_of(names(test.df_clean)),
+by = "Clusters",
+missing = "no"
+)%>%
+add_overall() %>%
+add_p() %>%
+bold_labels() %>%
+italicize_levels()
+```
+
+
+Radarchart
+```{r}
+library(fmsb)
+
+# Fonction facilitant la création des radat chart
+create_beautiful_radarchart <- function(data, color = "#00AFBB", 
+                                        vlabels = colnames(data), vlcex = 0.7,
+                                        caxislabels = NULL, title = NULL, ...){
+  radarchart(
+    data, axistype = 1,
+    # Personnaliser le polygone
+    pcol = color, pfcol = NULL, plwd = 2, plty = 1,
+    # Personnaliser la grille
+    cglcol = "grey", cglty = 1, cglwd = 0.8,
+    # Personnaliser l'axe
+    axislabcol = "grey", 
+    # etiquettes des variables
+    vlcex = vlcex, vlabels = vlabels,
+    caxislabels = caxislabels, title = title, ...
+  )
+}
+
+vars <- as.character(df.dp$Variables)
+
+
+# Centrage et reduction de toutes les variables (variables de rang + variables binaires)
+dataset <- df_clean %>% mutate(across(where(is.factor), as.numeric))%>%
+  select(all_of(vars))
+dataset$class <- partition_7
+dataset[,vars] <- scale(dataset[,vars])
+
+
+# Dataframe dfTemp avec les moyennes des variables par groupe (autant de lignes que de clusters, meme nb de colonnes que le Dataframe df)
+dfTemp <- dataset %>% group_by(class) %>% summarise_at(vars, function(x){mean(x, na.rm=T)})
+
+# Recherche des valeurs min et max en considerant toutes les valeurs moyennes
+range(data.frame(dfTemp[,c(-1)]))
+# Indiquer les bornes obtenues précédement (ici 2 et -1)
+dfRC <- data.frame(rbind(max=1.5, min=-2.2, dfTemp[,-1]))
+
+# Réduire la marge du graphique à l'aide de par()
+op <- par(mar = c(1, 2, 2, 2))
+# Créer les graphiques radar
+create_beautiful_radarchart(
+  # caxislabel et seg à ajuster en fonction des bornes 
+  data = dfRC, caxislabels = c(-2.2,-1.5,-1, -0.5, 0, 0.5, 1, 1.5), seg = 7,
+  color = c("#008000", "#00FFFF", "#008080", "#0000FF", "#000080", "#FF00FF", "#800080"))
+# Ajouter une légende
+legend(
+  x = "topright", xjust = 0, legend = paste0("Cluster ",1:length(unique(dataset$class))," (n=",table(dataset$class),")"), horiz = FALSE,
+  bty = "n", pch = 20 , col = c("#008000", "#00FFFF", "#008080", "#0000FF", "#000080", "#FF00FF", "#800080"),
+  text.col = "black", cex = 1, pt.cex = 2
+)
+par(op)
+```
+
+Création d’un dataset d’apprentissage et d’un dataset de validation
+```{r}
+nb_lignes <- floor((nrow(test.df_clean)*0.7)) #Nombre de lignes de l’échantillon d’apprentissage : 75% du dataset
+numero_aux_lignes <- test.df_clean[sample(nrow(test.df_clean)), ] #Ajout de numéros de lignes
+test.df_clean.train <- test.df_clean[1:nb_lignes, ] #Echantillon d’apprentissage
+test.df_clean.test <- test.df_clean[(nb_lignes+1):nrow(test.df_clean), ] #Echantillon de test
+```
+
+Nous allons maintenant construire l’arbre et l’élaguer
+```{r}
+#Construction de l’arbre
+library(rpart)
+tree <- rpart(Clusters~.,data=test.df_clean.train, minbucket=10, cp=0, xval=10)
+```
+
+Résultat
+```{r}
+#Affichage du résultat
+plot(tree, uniform=TRUE, branch=0.5, margin=0.1)
+text(tree, all=FALSE, use.n=TRUE)
+```
+On cherche à minimiser l’erreur pour définir le niveau d’élagage
+```{r}
+#On cherche à minimiser l’erreur pour définir le niveau d’élagage
+plotcp(tree)
+```
+Le graphique ci-dessus affiche le taux de mauvais classement en fonction de la taille de l’arbre. On cherche à minimiser l’erreur.
+
+```{r}
+#Affichage du cp optimal
+print(tree$cptable[which.min(tree$cptable[,4]),1])
+```
+```{r}
+# Selection de l'arbre optimal en indiquant l'index de tree$cptable correspondant ici 1
+resTreeOpti <- prune(tree, cp=tree$cptable[which.min(tree$cptable[,4]),1][1])
+```
+
+Visualisation de l'arbre
+
+```{r}
+library(rpart.plot)
+# Visualisation de l'arbre
+rpart.plot(resTreeOpti, type = 4)
+```
+
+
+On test la prédiction de l'arbre
+
+```{r}
+table_mat.tree <- table(test.df_clean.train$Clusters, stats::predict(resTreeOpti, type ="class"))
+table_mat.tree
+```
+```{r}
+
+accuracy_test.tree <- sum(diag(table_mat.tree)/sum(table_mat.tree))
+print(paste('Accuracy for test', accuracy_test.tree))
+#Explication du code: sum(diag(table_mat)): Somme de la diagonale ;  sum(table_mat) : Somme de la matrice
+```
+
+Matrice de confusion arbre de décision
+```{r}
+# Matrice de confusion arbre de décision
+confusionMatrix(test.df_clean.train$Clusters, stats::predict(tree, type ="class"))
+```
+On test le modèle avec le jeux de donnée test
+
+```{r}
+confusionMatrix(test.df_clean.test$Clusters, stats::predict(tree,test.df_clean.test, type ="class"))
+```
+
+On utilise maintenant le randomForest pour le deuxième modèle avec  1500 arbres 
+```{r}
+library(randomForest)
+random_f <- randomForest(Clusters~., data=test.df_clean.train, ntree = 1500,
+                         importance= TRUE, na.action = na.roughfix)
+```
+
+```{r}
+print(random_f)
+```
+Matrice de confusion random Forest
+```{r}
+# Matrice de confusion random Forest
+confusionMatrix(test.df_clean.train$Clusters, stats::predict(random_f, type ="class"))
+```
+On test le modèle avec le jeux de donnée test pour le randomForest
+```{r}
+confusionMatrix(test.df_clean.test$Clusters, stats::predict(random_f,test.df_clean.test, type ="class"))
+```
+
+
+On sauvgarde le model random forest
+```{r}
+saveRDS(random_f,"clustering_model.rds")
+```
+
+# Exemple d'utilisation du modèle
+
+```{r}
+new_data <- data.frame(
+  "sexe"= F,
+  "age"= 78,
+  "Creat_SI"= 200,
+  "Uree"= 1.20,
+  "LACT"=5.6,
+  "PCO2_corrigee"=65.8,
+  "Globules_blancs"= 15.23,
+  "HCO3_reels"=45.6,
+  "P_neutrophiles"=10.56,
+  "PH_corrige"=7.23,
+  "ICC"=0,
+  "Glucose"=3.78,
+  "Trt_Furosemide"=1,
+  "CVGR"=14.3,
+  "PO2_corrigee"=130.5
+)
+new_data
+```
+
+```{r}
+pred <- stats::predict(random_f,newdata = test.df_clean, type = "prob")
+pred
+```
+
+On joint le dataframe "test.df_clean avec la colonne durée "t2d_d"
+```{r}
+datajoin <- bind_cols(test.df_clean, data_brut$t2d_d)
+```
+Je renomme la colonne nouvellement ajouté avec le bon nom et on le place au bonne endroit
+```{r}
+colnames(datajoin)[72] <- "t2d_d"
+
+datajoin <- datajoin[,c(1:67,72,68,69,70,71)]
+```
+
+
+Estimation de survie de Kaplan-Meier
+```{r}
+fit <- survfit(Surv(t2d_d, DC_ddp) ~ Clusters, data = datajoin) 
+print(fit)
+```
+```{r}
+# Résumé des courbes de survie
+summary(fit)
+```
+
+
+```{r}
+# Accès au tableau récapitulatif de tri
+summary(fit)$table
+```
+
+```{r}
+d <- data.frame(time = fit$time,
+                  n.risk = fit$n.risk,
+                  n.event = fit$n.event,
+                  n.censor = fit$n.censor,
+                  surv = fit$surv,
+                  upper = fit$upper,
+                  lower = fit$lower
+                  )
+head(d)
+```
+
+```{r}
+# Change color, linetype by strata, risk.table color by strata
+ggsurvplot(fit,
+          pval = TRUE, conf.int = TRUE,
+          risk.table = TRUE, # Add risk table
+          risk.table.col = "strata", # Change risk table color by groups
+          linetype = "strata", # Change line type by groups
+          surv.median.line = "hv", # Specify median survival
+          ggtheme = theme_bw(), # Change ggplot2 theme
+          palette = c("#E7B800", "#2E9FDF"))
+```
+
